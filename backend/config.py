@@ -11,9 +11,12 @@ class Config:
     # Anthropic API settings
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
     ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"
-    
+
+    # ZhipuAI API settings
+    ZHIPUAI_API_KEY: str = os.getenv("ZHIPUAI_API_KEY", "")
+
     # Embedding model settings
-    EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+    EMBEDDING_MODEL: str = "embedding-3"  # ZhipuAI embedding model
     
     # Document processing settings
     CHUNK_SIZE: int = 800       # Size of text chunks for vector storage

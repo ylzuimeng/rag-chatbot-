@@ -12,10 +12,15 @@ class RAGSystem:
     
     def __init__(self, config):
         self.config = config
-        
+
         # Initialize core components
         self.document_processor = DocumentProcessor(config.CHUNK_SIZE, config.CHUNK_OVERLAP)
-        self.vector_store = VectorStore(config.CHROMA_PATH, config.EMBEDDING_MODEL, config.MAX_RESULTS)
+        self.vector_store = VectorStore(
+            chroma_path=config.CHROMA_PATH,
+            embedding_model=config.EMBEDDING_MODEL,
+            api_key=config.ZHIPUAI_API_KEY,
+            max_results=config.MAX_RESULTS
+        )
         self.ai_generator = AIGenerator(config.ANTHROPIC_API_KEY, config.ANTHROPIC_MODEL)
         self.session_manager = SessionManager(config.MAX_HISTORY)
         

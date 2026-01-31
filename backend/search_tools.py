@@ -19,21 +19,22 @@ class Tool(ABC):
 
 class CourseSearchTool(Tool):
     """Tool for searching course content with semantic course name matching"""
-    
+
     def __init__(self, vector_store: VectorStore):
         self.store = vector_store
         self.last_sources = []  # Track sources from last search
+        self.last_was_outline = False  # Track if last query was for outline
     
     def get_tool_definition(self) -> Dict[str, Any]:
         """Return Anthropic tool definition for this tool"""
         return {
             "name": "search_course_content",
-            "description": "Search course materials with smart course name matching and lesson filtering",
+            "description": "Search course materials with smart course name matching and lesson filtering. Can also retrieve course outlines/syllabi.",
             "input_schema": {
                 "type": "object",
                 "properties": {
                     "query": {
-                        "type": "string", 
+                        "type": "string",
                         "description": "What to search for in the course content"
                     },
                     "course_name": {
@@ -43,36 +44,53 @@ class CourseSearchTool(Tool):
                     "lesson_number": {
                         "type": "integer",
                         "description": "Specific lesson number to search within (e.g. 1, 2, 3)"
+                    },
+                    "get_outline": {
+                        "type": "boolean",
+                        "description": "Set to true if requesting course outline/syllabus/lesson list",
+                        "default": False
                     }
                 },
                 "required": ["query"]
             }
         }
     
-    def execute(self, query: str, course_name: Optional[str] = None, lesson_number: Optional[int] = None) -> str:
+    def execute(self, query: str, course_name: Optional[str] = None, lesson_number: Optional[int] = None, get_outline: bool = False) -> str:
         """
         Execute the search tool with given parameters.
-        
+
         Args:
             query: What to search for
             course_name: Optional course filter
             lesson_number: Optional lesson filter
-            
+            get_outline: Whether to return course outline instead of searching
+
         Returns:
             Formatted search results or error message
         """
-        
+        # Check if user is requesting course outline/syllabus
+        outline_keywords = ['outline', 'syllabus', '课程大纲', '大纲', '课时', 'lessons', 'curriculum']
+        is_outline_request = get_outline or any(keyword in query.lower() for keyword in outline_keywords)
+
+        # If outline is requested and course_name is provided, return course structure
+        if is_outline_request and course_name:
+            self.last_was_outline = True
+            return self._get_course_outline(course_name)
+
+        # Reset outline flag for regular searches
+        self.last_was_outline = False
+
         # Use the vector store's unified search interface
         results = self.store.search(
             query=query,
             course_name=course_name,
             lesson_number=lesson_number
         )
-        
+
         # Handle errors
         if results.error:
             return results.error
-        
+
         # Handle empty results
         if results.is_empty():
             filter_info = ""
@@ -81,36 +99,101 @@ class CourseSearchTool(Tool):
             if lesson_number:
                 filter_info += f" in lesson {lesson_number}"
             return f"No relevant content found{filter_info}."
-        
+
         # Format and return results
         return self._format_results(results)
+
+    def _get_course_outline(self, course_name: str) -> str:
+        """
+        Get course outline/lesson list from course metadata.
+
+        Args:
+            course_name: Course name to search for
+
+        Returns:
+            Formatted course outline or error message
+        """
+        # Resolve course name
+        course_title = self.store._resolve_course_name(course_name)
+
+        if not course_title:
+            return f"Course '{course_name}' not found."
+
+        # Get course metadata
+        courses_metadata = self.store.get_all_courses_metadata()
+
+        # Find matching course
+        course_info = None
+        for metadata in courses_metadata:
+            if metadata.get('title') == course_title:
+                course_info = metadata
+                break
+
+        if not course_info:
+            return f"Could not retrieve outline for '{course_title}'."
+
+        # Format outline
+        outline = f"## Course Outline: {course_title}\n\n"
+
+        # Add instructor if available
+        if course_info.get('instructor'):
+            outline += f"**Instructor:** {course_info['instructor']}\n\n"
+
+        # Add lesson list
+        lessons = course_info.get('lessons', [])
+        if lessons:
+            outline += "**Lessons:**\n\n"
+            for lesson in lessons:
+                lesson_num = lesson.get('lesson_number', 'N/A')
+                lesson_title = lesson.get('lesson_title', 'Untitled')
+                outline += f"- **Lesson {lesson_num}:** {lesson_title}\n"
+
+            # Add total count
+            outline += f"\n**Total:** {len(lessons)} lessons\n"
+
+            # Store sources
+            self.last_sources = [course_title]
+        else:
+            outline += "No lesson information available.\n"
+            self.last_sources = []
+
+        # Add course link if available
+        if course_info.get('course_link'):
+            outline += f"\n**Course Link:** {course_info['course_link']}\n"
+
+        return outline
     
     def _format_results(self, results: SearchResults) -> str:
         """Format search results with course and lesson context"""
         formatted = []
-        sources = []  # Track sources for the UI
-        
+        sources_set = set()  # Use set for deduplication
+        sources_order = []   # Maintain insertion order
+
         for doc, meta in zip(results.documents, results.metadata):
             course_title = meta.get('course_title', 'unknown')
             lesson_num = meta.get('lesson_number')
-            
+
             # Build context header
             header = f"[{course_title}"
             if lesson_num is not None:
                 header += f" - Lesson {lesson_num}"
             header += "]"
-            
-            # Track source for the UI
+
+            # Track source for the UI (with deduplication)
             source = course_title
             if lesson_num is not None:
                 source += f" - Lesson {lesson_num}"
-            sources.append(source)
-            
+
+            # Only add if not already present
+            if source not in sources_set:
+                sources_set.add(source)
+                sources_order.append(source)
+
             formatted.append(f"{header}\n{doc}")
-        
-        # Store sources for retrieval
-        self.last_sources = sources
-        
+
+        # Store deduplicated sources for retrieval
+        self.last_sources = sources_order
+
         return "\n\n".join(formatted)
 
 class ToolManager:
