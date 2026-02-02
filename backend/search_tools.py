@@ -151,8 +151,8 @@ class CourseSearchTool(Tool):
             # Add total count
             outline += f"\n**Total:** {len(lessons)} lessons\n"
 
-            # Store sources
-            self.last_sources = [course_title]
+            # Store sources (as list of dicts with same format)
+            self.last_sources = [{'display_name': course_title, 'link': course_info.get('course_link')}]
         else:
             outline += "No lesson information available.\n"
             self.last_sources = []
@@ -167,7 +167,7 @@ class CourseSearchTool(Tool):
         """Format search results with course and lesson context"""
         formatted = []
         sources_set = set()  # Use set for deduplication
-        sources_order = []   # Maintain insertion order
+        sources_order = []   # Maintain insertion order (list of dicts)
 
         for doc, meta in zip(results.documents, results.metadata):
             course_title = meta.get('course_title', 'unknown')
@@ -180,18 +180,29 @@ class CourseSearchTool(Tool):
             header += "]"
 
             # Track source for the UI (with deduplication)
-            source = course_title
+            # Create display name and fetch lesson link
+            display_name = course_title
             if lesson_num is not None:
-                source += f" - Lesson {lesson_num}"
+                display_name += f" - Lesson {lesson_num}"
 
-            # Only add if not already present
-            if source not in sources_set:
-                sources_set.add(source)
-                sources_order.append(source)
+            # Fetch lesson link if lesson number is available
+            lesson_link = None
+            if lesson_num is not None:
+                lesson_link = self.store.get_lesson_link(course_title, lesson_num)
+
+            source_info = {
+                'display_name': display_name,
+                'link': lesson_link
+            }
+
+            # Only add if not already present (compare by display_name)
+            if display_name not in sources_set:
+                sources_set.add(display_name)
+                sources_order.append(source_info)
 
             formatted.append(f"{header}\n{doc}")
 
-        # Store deduplicated sources for retrieval
+        # Store deduplicated sources for retrieval (list of dicts)
         self.last_sources = sources_order
 
         return "\n\n".join(formatted)
