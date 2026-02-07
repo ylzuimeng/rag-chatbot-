@@ -28,8 +28,13 @@ function setupEventListeners() {
     chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
-    
-    
+
+    // New Chat button
+    const newChatButton = document.getElementById('newChatButton');
+    if (newChatButton) {
+        newChatButton.addEventListener('click', handleNewChat);
+    }
+
     // Suggested questions
     document.querySelectorAll('.suggested-item').forEach(button => {
         button.addEventListener('click', (e) => {
@@ -38,6 +43,21 @@ function setupEventListeners() {
             sendMessage();
         });
     });
+}
+
+// Handle new chat button click
+async function handleNewChat() {
+    // Disable input during reset
+    chatInput.disabled = true;
+    sendButton.disabled = true;
+
+    // Clear the current conversation
+    await createNewSession();
+
+    // Re-enable input
+    chatInput.disabled = false;
+    sendButton.disabled = false;
+    chatInput.focus();
 }
 
 
@@ -124,14 +144,14 @@ function addMessage(content, type, sources = null, isWelcome = false) {
     if (sources && sources.length > 0) {
         const sourcesHtml = sources.map(source => {
             if (source.link) {
-                return `<a href="${escapeHtml(source.link)}" target="_blank" rel="noopener" class="source-link">${escapeHtml(source.display_name)}</a>`;
+                return `<div class="source-item"><a href="${escapeHtml(source.link)}" target="_blank" rel="noopener" class="source-link">${escapeHtml(source.display_name)}</a></div>`;
             } else {
-                return `<span class="source-no-link">${escapeHtml(source.display_name)}</span>`;
+                return `<div class="source-item"><span class="source-no-link">${escapeHtml(source.display_name)}</span></div>`;
             }
-        }).join(', ');
+        }).join('');
         html += `
             <details class="sources-collapsible">
-                <summary class="sources-header">Sources</summary>
+                <summary>Sources</summary>
                 <div class="sources-content">${sourcesHtml}</div>
             </details>
         `;
