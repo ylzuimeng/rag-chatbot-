@@ -177,3 +177,126 @@ def mock_empty_search_results(sample_empty_search_results):
     """Create empty SearchResults object."""
     from vector_store import SearchResults
     return SearchResults.from_chroma(sample_empty_search_results)
+
+
+# =============================================================================
+# API Test Fixtures
+# =============================================================================
+
+@pytest.fixture
+def test_app():
+    """
+    Create a test FastAPI app without static file mounting.
+    This avoids issues with missing frontend files in test environment.
+    Returns both the app and a mock RAG system that can be configured in tests.
+    """
+    from unittest.mock import patch, Mock
+    from fastapi import FastAPI, HTTPException
+    from pydantic import BaseModel
+    from typing import List, Optional, Dict
+
+    # Create a mock RAG system
+    rag_system = Mock()
+    rag_system.session_manager = Mock()
+
+    # Create test app
+    app = FastAPI(title="Test Course Materials RAG System")
+
+    # Pydantic models for request/response
+    class QueryRequest(BaseModel):
+        """Request model for course queries"""
+        query: str
+        session_id: Optional[str] = None
+
+    class QueryResponse(BaseModel):
+        """Response model for course queries"""
+        answer: str
+        sources: List[Dict[str, Optional[str]]]
+        session_id: str
+
+    class CourseStats(BaseModel):
+        """Response model for course statistics"""
+        total_courses: int
+        course_titles: List[str]
+
+    # API Endpoints
+    @app.post("/api/query", response_model=QueryResponse)
+    async def query_documents(request: QueryRequest):
+        """Process a query and return response with sources"""
+        try:
+            # Create session if not provided
+            session_id = request.session_id
+            if not session_id:
+                session_id = rag_system.session_manager.create_session()
+
+            # Process query using RAG system
+            answer, sources = rag_system.query(request.query, session_id)
+
+            return QueryResponse(
+                answer=answer,
+                sources=sources,
+                session_id=session_id
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.get("/api/courses", response_model=CourseStats)
+    async def get_course_stats():
+        """Get course analytics and statistics"""
+        try:
+            analytics = rag_system.get_course_analytics()
+            return CourseStats(
+                total_courses=analytics["total_courses"],
+                course_titles=analytics["course_titles"]
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.get("/")
+    async def root():
+        """Root endpoint - health check"""
+        return {"status": "healthy", "message": "RAG System API"}
+
+    # Store rag_system reference for tests
+    app.state.rag_system = rag_system
+
+    return app
+
+
+@pytest.fixture
+def mock_rag_system(test_app):
+    """Get the mocked RAG system from the test app."""
+    return test_app.state.rag_system
+
+
+@pytest.fixture
+def mock_search_response():
+    """Mock search response with sample data."""
+    return [
+        {
+            'display_name': 'Introduction to Model Context Protocol - Lesson 1',
+            'link': 'https://example.com/course/mcp-intro/lesson1'
+        },
+        {
+            'display_name': 'Introduction to Model Context Protocol - Lesson 2',
+            'link': 'https://example.com/course/mcp-intro/lesson2'
+        }
+    ]
+
+
+@pytest.fixture
+def successful_query_response():
+    """Mock successful AI query response."""
+    return "Model Context Protocol (MCP) is an open standard for connecting AI applications to data sources."
+
+
+@pytest.fixture
+def error_query_response():
+    """Mock error AI query response."""
+    return "I encountered an error processing your request. Please try again."
+
+
+@pytest.fixture
+def sample_session_id():
+    """Sample session ID for testing."""
+    return "test-session-abc123"
