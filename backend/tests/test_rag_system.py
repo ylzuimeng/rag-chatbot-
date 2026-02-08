@@ -2,6 +2,7 @@
 End-to-end tests for RAGSystem class.
 Tests complete request-response cycle, component integration, error handling.
 """
+
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 import os
@@ -9,12 +10,16 @@ import sys
 
 
 @pytest.mark.integration
-def test_complete_query_flow(mock_config, mock_vector_store, mock_ai_generator, mock_session_manager):
+def test_complete_query_flow(
+    mock_config, mock_vector_store, mock_ai_generator, mock_session_manager
+):
     """Test complete request-response cycle."""
-    with patch('rag_system.VectorStore', return_value=mock_vector_store), \
-         patch('rag_system.AIGenerator', return_value=mock_ai_generator), \
-         patch('rag_system.SessionManager', return_value=mock_session_manager), \
-         patch('rag_system.DocumentProcessor'):
+    with (
+        patch("rag_system.VectorStore", return_value=mock_vector_store),
+        patch("rag_system.AIGenerator", return_value=mock_ai_generator),
+        patch("rag_system.SessionManager", return_value=mock_session_manager),
+        patch("rag_system.DocumentProcessor"),
+    ):
 
         from rag_system import RAGSystem
 
@@ -23,11 +28,11 @@ def test_complete_query_flow(mock_config, mock_vector_store, mock_ai_generator, 
 
         mock_ai_generator.generate_response.return_value = "MCP is an open standard."
         mock_vector_store.search.return_value = Mock(
-            documents=['MCP content'],
-            metadata=[{'course_title': 'MCP', 'lesson_number': 1}],
+            documents=["MCP content"],
+            metadata=[{"course_title": "MCP", "lesson_number": 1}],
             distances=[0.1],
             error=None,
-            is_empty=lambda: False
+            is_empty=lambda: False,
         )
 
         # Execute
@@ -40,12 +45,16 @@ def test_complete_query_flow(mock_config, mock_vector_store, mock_ai_generator, 
 
 
 @pytest.mark.integration
-def test_content_question_triggers_search(mock_config, mock_vector_store, mock_ai_generator, mock_session_manager):
+def test_content_question_triggers_search(
+    mock_config, mock_vector_store, mock_ai_generator, mock_session_manager
+):
     """Test that content questions trigger search tool usage."""
-    with patch('rag_system.VectorStore', return_value=mock_vector_store), \
-         patch('rag_system.AIGenerator', return_value=mock_ai_generator), \
-         patch('rag_system.SessionManager', return_value=mock_session_manager), \
-         patch('rag_system.DocumentProcessor'):
+    with (
+        patch("rag_system.VectorStore", return_value=mock_vector_store),
+        patch("rag_system.AIGenerator", return_value=mock_ai_generator),
+        patch("rag_system.SessionManager", return_value=mock_session_manager),
+        patch("rag_system.DocumentProcessor"),
+    ):
 
         from rag_system import RAGSystem
 
@@ -55,7 +64,7 @@ def test_content_question_triggers_search(mock_config, mock_vector_store, mock_a
         # Mock AI to request search
         mock_tool_manager = Mock()
         mock_tool_manager.get_last_sources.return_value = [
-            {'display_name': 'MCP Course - Lesson 1', 'link': 'https://example.com/l1'}
+            {"display_name": "MCP Course - Lesson 1", "link": "https://example.com/l1"}
         ]
 
         mock_ai_generator.generate_response.return_value = "Based on the course materials..."
@@ -66,24 +75,30 @@ def test_content_question_triggers_search(mock_config, mock_vector_store, mock_a
         # Verify AI generator was called with tools
         mock_ai_generator.generate_response.assert_called_once()
         call_args = mock_ai_generator.generate_response.call_args
-        assert 'tools' in call_args.kwargs
-        assert 'tool_manager' in call_args.kwargs
+        assert "tools" in call_args.kwargs
+        assert "tool_manager" in call_args.kwargs
 
 
 @pytest.mark.integration
-def test_outline_request_uses_correct_tool(mock_config, mock_vector_store, mock_ai_generator, mock_session_manager):
+def test_outline_request_uses_correct_tool(
+    mock_config, mock_vector_store, mock_ai_generator, mock_session_manager
+):
     """Test that outline requests use the correct tool."""
-    with patch('rag_system.VectorStore', return_value=mock_vector_store), \
-         patch('rag_system.AIGenerator', return_value=mock_ai_generator), \
-         patch('rag_system.SessionManager', return_value=mock_session_manager), \
-         patch('rag_system.DocumentProcessor'):
+    with (
+        patch("rag_system.VectorStore", return_value=mock_vector_store),
+        patch("rag_system.AIGenerator", return_value=mock_ai_generator),
+        patch("rag_system.SessionManager", return_value=mock_session_manager),
+        patch("rag_system.DocumentProcessor"),
+    ):
 
         from rag_system import RAGSystem
 
         # Setup
         system = RAGSystem(mock_config)
 
-        mock_ai_generator.generate_response.return_value = "## Course Outline\n\n**Lessons:**\n- Lesson 1"
+        mock_ai_generator.generate_response.return_value = (
+            "## Course Outline\n\n**Lessons:**\n- Lesson 1"
+        )
 
         # Execute
         response, sources = system.query("Show me the outline for MCP course")
@@ -94,12 +109,16 @@ def test_outline_request_uses_correct_tool(mock_config, mock_vector_store, mock_
 
 
 @pytest.mark.integration
-def test_session_context_maintained(mock_config, mock_vector_store, mock_ai_generator, mock_session_manager):
+def test_session_context_maintained(
+    mock_config, mock_vector_store, mock_ai_generator, mock_session_manager
+):
     """Test that conversation history is maintained across queries."""
-    with patch('rag_system.VectorStore', return_value=mock_vector_store), \
-         patch('rag_system.AIGenerator', return_value=mock_ai_generator), \
-         patch('rag_system.SessionManager', return_value=mock_session_manager), \
-         patch('rag_system.DocumentProcessor'):
+    with (
+        patch("rag_system.VectorStore", return_value=mock_vector_store),
+        patch("rag_system.AIGenerator", return_value=mock_ai_generator),
+        patch("rag_system.SessionManager", return_value=mock_session_manager),
+        patch("rag_system.DocumentProcessor"),
+    ):
 
         from rag_system import RAGSystem
 
@@ -108,8 +127,8 @@ def test_session_context_maintained(mock_config, mock_vector_store, mock_ai_gene
         session_id = "test-session-123"
 
         mock_session_manager.get_conversation_history.return_value = [
-            {'role': 'user', 'content': 'What is MCP?'},
-            {'role': 'assistant', 'content': 'MCP is a protocol.'}
+            {"role": "user", "content": "What is MCP?"},
+            {"role": "assistant", "content": "MCP is a protocol."},
         ]
 
         mock_ai_generator.generate_response.return_value = "It enables AI integration."
@@ -125,12 +144,16 @@ def test_session_context_maintained(mock_config, mock_vector_store, mock_ai_gene
 
 
 @pytest.mark.integration
-def test_sources_from_search_are_returned(mock_config, mock_vector_store, mock_ai_generator, mock_session_manager):
+def test_sources_from_search_are_returned(
+    mock_config, mock_vector_store, mock_ai_generator, mock_session_manager
+):
     """Test that sources from search are properly returned."""
-    with patch('rag_system.VectorStore', return_value=mock_vector_store), \
-         patch('rag_system.AIGenerator', return_value=mock_ai_generator), \
-         patch('rag_system.SessionManager', return_value=mock_session_manager), \
-         patch('rag_system.DocumentProcessor'):
+    with (
+        patch("rag_system.VectorStore", return_value=mock_vector_store),
+        patch("rag_system.AIGenerator", return_value=mock_ai_generator),
+        patch("rag_system.SessionManager", return_value=mock_session_manager),
+        patch("rag_system.DocumentProcessor"),
+    ):
 
         from rag_system import RAGSystem
 
@@ -138,8 +161,8 @@ def test_sources_from_search_are_returned(mock_config, mock_vector_store, mock_a
         system = RAGSystem(mock_config)
 
         expected_sources = [
-            {'display_name': 'MCP Course - Lesson 1', 'link': 'https://example.com/l1'},
-            {'display_name': 'MCP Course - Lesson 2', 'link': 'https://example.com/l2'}
+            {"display_name": "MCP Course - Lesson 1", "link": "https://example.com/l1"},
+            {"display_name": "MCP Course - Lesson 2", "link": "https://example.com/l2"},
         ]
 
         # Mock tool manager to return sources
@@ -156,12 +179,16 @@ def test_sources_from_search_are_returned(mock_config, mock_vector_store, mock_a
 
 
 @pytest.mark.integration
-def test_query_failure_handling(mock_config, mock_vector_store, mock_ai_generator, mock_session_manager):
+def test_query_failure_handling(
+    mock_config, mock_vector_store, mock_ai_generator, mock_session_manager
+):
     """Test that query failures are handled gracefully."""
-    with patch('rag_system.VectorStore', return_value=mock_vector_store), \
-         patch('rag_system.AIGenerator', return_value=mock_ai_generator), \
-         patch('rag_system.SessionManager', return_value=mock_session_manager), \
-         patch('rag_system.DocumentProcessor'):
+    with (
+        patch("rag_system.VectorStore", return_value=mock_vector_store),
+        patch("rag_system.AIGenerator", return_value=mock_ai_generator),
+        patch("rag_system.SessionManager", return_value=mock_session_manager),
+        patch("rag_system.DocumentProcessor"),
+    ):
 
         from rag_system import RAGSystem
 
@@ -169,7 +196,9 @@ def test_query_failure_handling(mock_config, mock_vector_store, mock_ai_generato
         system = RAGSystem(mock_config)
 
         # Mock AI to return error
-        mock_ai_generator.generate_response.return_value = "I encountered an error processing your request."
+        mock_ai_generator.generate_response.return_value = (
+            "I encountered an error processing your request."
+        )
 
         # Execute
         response, sources = system.query("test query")
@@ -182,11 +211,11 @@ def test_query_failure_handling(mock_config, mock_vector_store, mock_ai_generato
 @pytest.mark.integration
 def test_vector_store_unavailable(mock_config):
     """Test behavior when vector store is unavailable."""
-    with patch('rag_system.DocumentProcessor'):
+    with patch("rag_system.DocumentProcessor"):
         from rag_system import RAGSystem
 
         # Mock VectorStore to raise exception
-        with patch('rag_system.VectorStore', side_effect=Exception("Database connection failed")):
+        with patch("rag_system.VectorStore", side_effect=Exception("Database connection failed")):
             # System initialization should fail gracefully
             try:
                 system = RAGSystem(mock_config)
@@ -198,14 +227,16 @@ def test_vector_store_unavailable(mock_config):
 @pytest.mark.critical
 def test_max_results_passed_to_vector_store(mock_config):
     """CRITICAL: Test that MAX_RESULTS from config is passed to VectorStore."""
-    with patch('rag_system.DocumentProcessor'):
+    with patch("rag_system.DocumentProcessor"):
         from rag_system import RAGSystem
 
         # This is the CRITICAL test that would have caught the MAX_RESULTS=0 bug
         mock_vs = Mock()
-        with patch('rag_system.VectorStore', return_value=mock_vs), \
-             patch('rag_system.AIGenerator'), \
-             patch('rag_system.SessionManager'):
+        with (
+            patch("rag_system.VectorStore", return_value=mock_vs),
+            patch("rag_system.AIGenerator"),
+            patch("rag_system.SessionManager"),
+        ):
 
             system = RAGSystem(mock_config)
 
@@ -221,17 +252,20 @@ def test_max_results_passed_to_vector_store(mock_config):
 def test_config_max_results_is_positive(mock_config):
     """CRITICAL: Test that MAX_RESULTS in config is positive (not 0)."""
     # This is the simplest test that would catch the bug
-    assert mock_config.MAX_RESULTS > 0, \
-        f"CRITICAL BUG: MAX_RESULTS is {mock_config.MAX_RESULTS}, must be > 0 for searches to return results"
+    assert (
+        mock_config.MAX_RESULTS > 0
+    ), f"CRITICAL BUG: MAX_RESULTS is {mock_config.MAX_RESULTS}, must be > 0 for searches to return results"
 
 
 @pytest.mark.unit
 def test_get_course_analytics(mock_config, mock_vector_store):
     """Test getting course analytics."""
-    with patch('rag_system.VectorStore', return_value=mock_vector_store), \
-         patch('rag_system.AIGenerator'), \
-         patch('rag_system.SessionManager'), \
-         patch('rag_system.DocumentProcessor'):
+    with (
+        patch("rag_system.VectorStore", return_value=mock_vector_store),
+        patch("rag_system.AIGenerator"),
+        patch("rag_system.SessionManager"),
+        patch("rag_system.DocumentProcessor"),
+    ):
 
         from rag_system import RAGSystem
 
@@ -239,24 +273,30 @@ def test_get_course_analytics(mock_config, mock_vector_store):
         system = RAGSystem(mock_config)
         mock_vector_store.get_course_count.return_value = 5
         mock_vector_store.get_existing_course_titles.return_value = [
-            'Course 1', 'Course 2', 'Course 3', 'Course 4', 'Course 5'
+            "Course 1",
+            "Course 2",
+            "Course 3",
+            "Course 4",
+            "Course 5",
         ]
 
         # Execute
         analytics = system.get_course_analytics()
 
         # Verify
-        assert analytics['total_courses'] == 5
-        assert len(analytics['course_titles']) == 5
+        assert analytics["total_courses"] == 5
+        assert len(analytics["course_titles"]) == 5
 
 
 @pytest.mark.unit
 def test_tool_manager_initialization(mock_config, mock_vector_store):
     """Test that ToolManager is properly initialized with both tools."""
-    with patch('rag_system.VectorStore', return_value=mock_vector_store), \
-         patch('rag_system.AIGenerator'), \
-         patch('rag_system.SessionManager'), \
-         patch('rag_system.DocumentProcessor'):
+    with (
+        patch("rag_system.VectorStore", return_value=mock_vector_store),
+        patch("rag_system.AIGenerator"),
+        patch("rag_system.SessionManager"),
+        patch("rag_system.DocumentProcessor"),
+    ):
 
         from rag_system import RAGSystem
 
@@ -268,18 +308,20 @@ def test_tool_manager_initialization(mock_config, mock_vector_store):
 
         # Verify both tools are registered
         tool_definitions = system.tool_manager.get_tool_definitions()
-        tool_names = [tool['name'] for tool in tool_definitions]
-        assert 'search_course_content' in tool_names
-        assert 'get_course_outline' in tool_names
+        tool_names = [tool["name"] for tool in tool_definitions]
+        assert "search_course_content" in tool_names
+        assert "get_course_outline" in tool_names
 
 
 @pytest.mark.unit
 def test_session_manager_initialization(mock_config, mock_vector_store):
     """Test that SessionManager is properly initialized."""
-    with patch('rag_system.VectorStore', return_value=mock_vector_store), \
-         patch('rag_system.AIGenerator'), \
-         patch('rag_system.SessionManager') as mock_sm, \
-         patch('rag_system.DocumentProcessor'):
+    with (
+        patch("rag_system.VectorStore", return_value=mock_vector_store),
+        patch("rag_system.AIGenerator"),
+        patch("rag_system.SessionManager") as mock_sm,
+        patch("rag_system.DocumentProcessor"),
+    ):
 
         from rag_system import RAGSystem
 

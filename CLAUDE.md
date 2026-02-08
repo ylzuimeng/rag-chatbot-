@@ -181,3 +181,105 @@ uv sync --upgrade
 - **`.venv/`**: Virtual environment (auto-managed by uv)
 
 **Note:** Never modify `uv.lock` manually. Always update dependencies via `uv add` or modify `pyproject.toml`.
+
+## Code Quality Tools
+
+This project uses automated code quality tools to maintain code consistency and catch issues early.
+
+### Tooling Stack
+- **Black**: Code formatter (enforces consistent style)
+- **Ruff**: Fast linter (catches code issues and style violations)
+- **MyPy**: Static type checker (catches type errors)
+- **pytest**: Testing framework with coverage reporting
+
+### Running Quality Checks
+
+All quality checks are managed through a single script:
+
+```bash
+# Make script executable (first time only)
+chmod +x scripts/quality.sh
+
+# Format code with Black
+./scripts/quality.sh format
+
+# Check if code is properly formatted (no changes)
+./scripts/quality.sh check-format
+
+# Run linter to check for issues
+./scripts/quality.sh lint
+
+# Run linter with auto-fix
+./scripts/quality.sh lint-fix
+
+# Run type checker
+./scripts/quality.sh type-check
+
+# Run tests
+./scripts/quality.sh test
+
+# Run tests with coverage
+./scripts/quality.sh test-cov
+
+# Run all quality checks
+./scripts/quality.sh all
+```
+
+### Tool Configurations
+
+All tool configurations are in `pyproject.toml`:
+
+```toml
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+```
+
+### Pre-Commit Workflow
+
+Before committing code, run:
+```bash
+./scripts/quality.sh all
+```
+
+This ensures:
+- Code is properly formatted
+- No linting errors
+- Type checking passes
+- All tests pass
+
+### Direct Tool Usage
+
+You can also run tools directly:
+
+```bash
+# Format with Black
+uv run black backend/
+
+# Lint with Ruff
+uv run ruff check backend/
+
+# Type check with MyPy
+uv run mypy backend/
+
+# Run tests
+uv run pytest backend/tests/
+```
+
+### CI/CD Integration
+
+The quality script can be integrated into CI/CD pipelines:
+
+```yaml
+# Example GitHub Actions workflow
+- name: Run quality checks
+  run: ./scripts/quality.sh all
+```
