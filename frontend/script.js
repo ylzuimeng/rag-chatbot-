@@ -15,7 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     sendButton = document.getElementById('sendButton');
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
-    
+
+    // Initialize theme
+    initializeTheme();
+
     setupEventListeners();
     createNewSession();
     loadCourseStats();
@@ -33,6 +36,12 @@ function setupEventListeners() {
     const newChatButton = document.getElementById('newChatButton');
     if (newChatButton) {
         newChatButton.addEventListener('click', handleNewChat);
+    }
+
+    // Theme toggle button
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
     }
 
     // Suggested questions
@@ -215,4 +224,29 @@ async function loadCourseStats() {
             courseTitles.innerHTML = '<span class="error">Failed to load courses</span>';
         }
     }
+}
+
+// Theme Functions
+function initializeTheme() {
+    // Check for saved theme preference or default to dark theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    // Apply new theme
+    document.documentElement.setAttribute('data-theme', newTheme);
+
+    // Save preference to localStorage
+    localStorage.setItem('theme', newTheme);
+
+    // Add animation effect
+    const toggle = document.getElementById('themeToggle');
+    toggle.style.transform = 'rotate(360deg)';
+    setTimeout(() => {
+        toggle.style.transform = '';
+    }, 300);
 }
