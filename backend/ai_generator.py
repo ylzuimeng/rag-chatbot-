@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 @dataclass
 class ConversationState:
     """Immutable state object for tracking conversation through tool calling workflow."""
+
     # Immutable context
     query: str
     system_prompt: str
@@ -30,7 +31,7 @@ class ConversationState:
 
 class AIGenerator:
     """Handles interactions with Anthropic's Claude API for generating responses"""
-    
+
     # Static system prompt to avoid rebuilding on each call
     SYSTEM_PROMPT = """You are an AI assistant specialized in course materials and educational content with access to a comprehensive search tool for course information.
 
@@ -61,17 +62,13 @@ All responses must be:
 4. **Example-supported** - Include relevant examples when they aid understanding
 Provide only the direct answer to what was asked.
 """
-    
+
     def __init__(self, api_key: str, model: str):
         self.client = anthropic.Anthropic(api_key=api_key)
         self.model = model
 
         # Pre-build base API parameters
-        self.base_params = {
-            "model": self.model,
-            "temperature": 0,
-            "max_tokens": 800
-        }
+        self.base_params = {"model": self.model, "temperature": 0, "max_tokens": 800}
 
     def _check_termination_conditions(self, state: ConversationState) -> bool:
         """Evaluate if conversation should terminate."""
@@ -103,7 +100,7 @@ Provide only the direct answer to what was asked.
         api_params = {
             **state.base_params,
             "messages": state.messages,
-            "system": state.system_prompt
+            "system": state.system_prompt,
         }
 
         # Include tools if we haven't reached max rounds yet
@@ -149,21 +146,24 @@ Provide only the direct answer to what was asked.
             if content_block.type == "tool_use":
                 try:
                     tool_result = state.tool_manager.execute_tool(
-                        content_block.name,
-                        **content_block.input
+                        content_block.name, **content_block.input
                     )
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": content_block.id,
-                        "content": tool_result
-                    })
+                    tool_results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": content_block.id,
+                            "content": tool_result,
+                        }
+                    )
                 except Exception as e:
                     # Handle tool execution errors gracefully
-                    tool_results.append({
-                        "type": "tool_result",
-                        "tool_use_id": content_block.id,
-                        "content": f"Error executing tool: {str(e)}"
-                    })
+                    tool_results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": content_block.id,
+                            "content": f"Error executing tool: {str(e)}",
+                        }
+                    )
 
         # Add tool results as user message
         if tool_results:
@@ -193,12 +193,15 @@ Provide only the direct answer to what was asked.
 
         # Recurse to continue the loop
         return self._process_conversation_state(state)
-    
-    def generate_response(self, query: str,
-                         conversation_history: Optional[str] = None,
-                         tools: Optional[List] = None,
-                         tool_manager=None,
-                         max_rounds: int = 2) -> str:
+
+    def generate_response(
+        self,
+        query: str,
+        conversation_history: Optional[str] = None,
+        tools: Optional[List] = None,
+        tool_manager=None,
+        max_rounds: int = 2,
+    ) -> str:
         """
         Generate AI response with optional tool usage and conversation context.
 
@@ -229,7 +232,7 @@ Provide only the direct answer to what was asked.
             tool_manager=tool_manager,
             messages=[{"role": "user", "content": query}],
             round_number=0,
-            max_rounds=max_rounds
+            max_rounds=max_rounds,
         )
 
         # Process conversation through state machine

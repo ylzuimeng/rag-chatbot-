@@ -2,6 +2,7 @@
 Shared pytest fixtures and test configuration for RAG system tests.
 Isolates tests from external dependencies (APIs, database) for fast, reliable execution.
 """
+
 import os
 import sys
 from pathlib import Path
@@ -32,14 +33,26 @@ def mock_config():
 def sample_course_data():
     """Sample course data for testing."""
     return {
-        'title': 'Introduction to Model Context Protocol',
-        'instructor': 'Dr. Test Instructor',
-        'course_link': 'https://example.com/course/mcp-intro',
-        'lessons': [
-            {'lesson_number': 1, 'lesson_title': 'What is MCP?', 'lesson_link': 'https://example.com/mcp-intro/lesson1'},
-            {'lesson_number': 2, 'lesson_title': 'MCP Architecture', 'lesson_link': 'https://example.com/mcp-intro/lesson2'},
-            {'lesson_number': 3, 'lesson_title': 'Building MCP Clients', 'lesson_link': 'https://example.com/mcp-intro/lesson3'},
-        ]
+        "title": "Introduction to Model Context Protocol",
+        "instructor": "Dr. Test Instructor",
+        "course_link": "https://example.com/course/mcp-intro",
+        "lessons": [
+            {
+                "lesson_number": 1,
+                "lesson_title": "What is MCP?",
+                "lesson_link": "https://example.com/mcp-intro/lesson1",
+            },
+            {
+                "lesson_number": 2,
+                "lesson_title": "MCP Architecture",
+                "lesson_link": "https://example.com/mcp-intro/lesson2",
+            },
+            {
+                "lesson_number": 3,
+                "lesson_title": "Building MCP Clients",
+                "lesson_link": "https://example.com/mcp-intro/lesson3",
+            },
+        ],
     }
 
 
@@ -48,23 +61,23 @@ def sample_chunks():
     """Sample course chunks for testing."""
     return [
         {
-            'content': 'Model Context Protocol (MCP) is an open standard for connecting AI applications to data sources.',
-            'course_title': 'Introduction to Model Context Protocol',
-            'lesson_number': 1,
-            'chunk_index': 0
+            "content": "Model Context Protocol (MCP) is an open standard for connecting AI applications to data sources.",
+            "course_title": "Introduction to Model Context Protocol",
+            "lesson_number": 1,
+            "chunk_index": 0,
         },
         {
-            'content': 'MCP enables seamless integration between AI assistants and external tools through a standardized interface.',
-            'course_title': 'Introduction to Model Context Protocol',
-            'lesson_number': 1,
-            'chunk_index': 1
+            "content": "MCP enables seamless integration between AI assistants and external tools through a standardized interface.",
+            "course_title": "Introduction to Model Context Protocol",
+            "lesson_number": 1,
+            "chunk_index": 1,
         },
         {
-            'content': 'The architecture consists of three main components: clients, servers, and the protocol itself.',
-            'course_title': 'Introduction to Model Context Protocol',
-            'lesson_number': 2,
-            'chunk_index': 0
-        }
+            "content": "The architecture consists of three main components: clients, servers, and the protocol itself.",
+            "course_title": "Introduction to Model Context Protocol",
+            "lesson_number": 2,
+            "chunk_index": 0,
+        },
     ]
 
 
@@ -76,10 +89,10 @@ def mock_vector_store():
 
     # Mock search method
     mock_results = Mock()
-    mock_results.documents = ['Sample content 1', 'Sample content 2']
+    mock_results.documents = ["Sample content 1", "Sample content 2"]
     mock_results.metadata = [
-        {'course_title': 'Test Course', 'lesson_number': 1},
-        {'course_title': 'Test Course', 'lesson_number': 2}
+        {"course_title": "Test Course", "lesson_number": 1},
+        {"course_title": "Test Course", "lesson_number": 2},
     ]
     mock_results.distances = [0.1, 0.2]
     mock_results.error = None
@@ -88,23 +101,31 @@ def mock_vector_store():
     mock_store.search.return_value = mock_results
 
     # Mock course name resolution
-    mock_store._resolve_course_name.return_value = 'Test Course'
+    mock_store._resolve_course_name.return_value = "Test Course"
 
     # Mock metadata methods
     mock_store.get_all_courses_metadata.return_value = [
         {
-            'title': 'Test Course',
-            'instructor': 'Test Instructor',
-            'course_link': 'https://example.com/test',
-            'lessons': [
-                {'lesson_number': 1, 'lesson_title': 'Lesson 1', 'lesson_link': 'https://example.com/l1'},
-                {'lesson_number': 2, 'lesson_title': 'Lesson 2', 'lesson_link': 'https://example.com/l2'}
-            ]
+            "title": "Test Course",
+            "instructor": "Test Instructor",
+            "course_link": "https://example.com/test",
+            "lessons": [
+                {
+                    "lesson_number": 1,
+                    "lesson_title": "Lesson 1",
+                    "lesson_link": "https://example.com/l1",
+                },
+                {
+                    "lesson_number": 2,
+                    "lesson_title": "Lesson 2",
+                    "lesson_link": "https://example.com/l2",
+                },
+            ],
         }
     ]
 
     # Mock lesson link retrieval
-    mock_store.get_lesson_link.return_value = 'https://example.com/lesson-link'
+    mock_store.get_lesson_link.return_value = "https://example.com/lesson-link"
 
     return mock_store
 
@@ -131,8 +152,8 @@ def mock_env_vars():
     original_env = os.environ.copy()
 
     # Set test environment variables
-    os.environ['ANTHROPIC_API_KEY'] = 'test_anthropic_key'
-    os.environ['ZHIPUAI_API_KEY'] = 'test_zhipuai_key'
+    os.environ["ANTHROPIC_API_KEY"] = "test_anthropic_key"
+    os.environ["ZHIPUAI_API_KEY"] = "test_zhipuai_key"
 
     yield
 
@@ -145,30 +166,29 @@ def mock_env_vars():
 def sample_search_results():
     """Sample search results mimicking ChromaDB output."""
     return {
-        'documents': [['Content 1', 'Content 2', 'Content 3']],
-        'metadatas': [[
-            {'course_title': 'Test Course', 'lesson_number': 1, 'chunk_index': 0},
-            {'course_title': 'Test Course', 'lesson_number': 2, 'chunk_index': 0},
-            {'course_title': 'Another Course', 'lesson_number': 1, 'chunk_index': 0}
-        ]],
-        'distances': [[0.1, 0.2, 0.3]]
+        "documents": [["Content 1", "Content 2", "Content 3"]],
+        "metadatas": [
+            [
+                {"course_title": "Test Course", "lesson_number": 1, "chunk_index": 0},
+                {"course_title": "Test Course", "lesson_number": 2, "chunk_index": 0},
+                {"course_title": "Another Course", "lesson_number": 1, "chunk_index": 0},
+            ]
+        ],
+        "distances": [[0.1, 0.2, 0.3]],
     }
 
 
 @pytest.fixture
 def sample_empty_search_results():
     """Sample empty search results."""
-    return {
-        'documents': [[]],
-        'metadatas': [[]],
-        'distances': [[]]
-    }
+    return {"documents": [[]], "metadatas": [[]], "distances": [[]]}
 
 
 @pytest.fixture
 def mock_search_results(sample_search_results):
     """Create SearchResults object from sample ChromaDB results."""
     from vector_store import SearchResults
+
     return SearchResults.from_chroma(sample_search_results)
 
 
@@ -176,4 +196,5 @@ def mock_search_results(sample_search_results):
 def mock_empty_search_results(sample_empty_search_results):
     """Create empty SearchResults object."""
     from vector_store import SearchResults
+
     return SearchResults.from_chroma(sample_empty_search_results)

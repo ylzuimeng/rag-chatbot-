@@ -42,13 +42,11 @@ class ZhipuAIEmbeddingFunction(EmbeddingFunction[Documents]):
 
                 # Call ZhipuAI embedding API with timeout
                 response = self.client.embeddings.create(
-                    model=self.model,
-                    input=text,
-                    timeout=30  # 30 second timeout
+                    model=self.model, input=text, timeout=30  # 30 second timeout
                 )
 
                 # Extract embedding from response
-                if response and hasattr(response, 'data') and len(response.data) > 0:
+                if response and hasattr(response, "data") and len(response.data) > 0:
                     embedding = response.data[0].embedding
                     embeddings.append(embedding)
                     print(f"  ✓ Success (dimension: {len(embedding)})")
@@ -63,7 +61,9 @@ class ZhipuAIEmbeddingFunction(EmbeddingFunction[Documents]):
         return embeddings
 
 
-def create_zhipuai_embedding_function(api_key: str, model: str = "embedding-3") -> ZhipuAIEmbeddingFunction:
+def create_zhipuai_embedding_function(
+    api_key: str, model: str = "embedding-3"
+) -> ZhipuAIEmbeddingFunction:
     """
     Factory function to create a ZhipuAI embedding function.
 
