@@ -29,3 +29,17 @@ uploads/
 # OS
 .DS_Store
 Thumbs.db
+
+# claude settings
+.playwright-mcp/
+.claude/
+
+# Coverage reports
+.coverage
+.*/.coverage
+htmlcov/
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/     
