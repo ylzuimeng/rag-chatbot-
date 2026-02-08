@@ -3,8 +3,9 @@ Integration tests for AIGenerator class.
 Tests Anthropic API integration, tool calling, response generation.
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 
 
 @pytest.mark.unit

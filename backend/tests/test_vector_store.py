@@ -4,8 +4,8 @@ Tests database layer operations: search, filtering, course resolution.
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from vector_store import VectorStore, SearchResults
+
+from vector_store import SearchResults
 
 
 @pytest.mark.unit

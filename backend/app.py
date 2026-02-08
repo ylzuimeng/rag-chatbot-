@@ -2,13 +2,13 @@ import warnings
 
 warnings.filterwarnings("ignore", message="resource_tracker: There appear to be.*")
 
+import os
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import List, Optional, Dict
-import os
 
 from config import config
 from rag_system import RAGSystem
@@ -38,14 +38,14 @@ class QueryRequest(BaseModel):
     """Request model for course queries"""
 
     query: str
-    session_id: Optional[str] = None
+    session_id: str | None = None
 
 
 class QueryResponse(BaseModel):
     """Response model for course queries"""
 
     answer: str
-    sources: List[Dict[str, Optional[str]]]
+    sources: list[dict[str, str | None]]
     session_id: str
 
 
@@ -53,7 +53,7 @@ class CourseStats(BaseModel):
     """Response model for course statistics"""
 
     total_courses: int
-    course_titles: List[str]
+    course_titles: list[str]
 
 
 # API Endpoints
@@ -102,10 +102,8 @@ async def startup_event():
 
 
 # Custom static file handler with no-cache headers for development
-from fastapi.staticfiles import StaticFiles
+
 from fastapi.responses import FileResponse
-import os
-from pathlib import Path
 
 
 class DevStaticFiles(StaticFiles):

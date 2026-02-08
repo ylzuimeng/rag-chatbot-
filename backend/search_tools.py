@@ -1,13 +1,14 @@
-from typing import Dict, Any, Optional, Protocol
 from abc import ABC, abstractmethod
-from vector_store import VectorStore, SearchResults
+from typing import Any
+
+from vector_store import SearchResults, VectorStore
 
 
 class Tool(ABC):
     """Abstract base class for all tools"""
 
     @abstractmethod
-    def get_tool_definition(self) -> Dict[str, Any]:
+    def get_tool_definition(self) -> dict[str, Any]:
         """Return Anthropic tool definition for this tool"""
         pass
 
@@ -25,7 +26,7 @@ class CourseSearchTool(Tool):
         self.last_sources = []  # Track sources from last search
         self.last_was_outline = False  # Track if last query was for outline
 
-    def get_tool_definition(self) -> Dict[str, Any]:
+    def get_tool_definition(self) -> dict[str, Any]:
         """Return Anthropic tool definition for this tool"""
         return {
             "name": "search_course_content",
@@ -58,8 +59,8 @@ class CourseSearchTool(Tool):
     def execute(
         self,
         query: str,
-        course_name: Optional[str] = None,
-        lesson_number: Optional[int] = None,
+        course_name: str | None = None,
+        lesson_number: int | None = None,
         get_outline: bool = False,
     ) -> str:
         """
@@ -228,7 +229,7 @@ class CourseOutlineTool(Tool):
         self.store = vector_store
         self.last_sources = []  # Track sources from last outline request
 
-    def get_tool_definition(self) -> Dict[str, Any]:
+    def get_tool_definition(self) -> dict[str, Any]:
         return {
             "name": "get_course_outline",
             "description": "Get the course outline, syllabus, or lesson list for a specific course. Returns course title, course link, instructor, and complete lesson list with lesson numbers and titles.",

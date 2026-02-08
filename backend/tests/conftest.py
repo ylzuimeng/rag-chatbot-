@@ -6,7 +6,8 @@ Isolates tests from external dependencies (APIs, database) for fast, reliable ex
 import os
 import sys
 from pathlib import Path
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock
+
 import pytest
 
 # Add parent directory to path for imports
@@ -204,6 +205,7 @@ def mock_empty_search_results(sample_empty_search_results):
 # API Test Fixtures
 # =============================================================================
 
+
 @pytest.fixture
 def test_app():
     """
@@ -211,10 +213,10 @@ def test_app():
     This avoids issues with missing frontend files in test environment.
     Returns both the app and a mock RAG system that can be configured in tests.
     """
-    from unittest.mock import patch, Mock
+    from unittest.mock import Mock
+
     from fastapi import FastAPI, HTTPException
     from pydantic import BaseModel
-    from typing import List, Optional, Dict
 
     # Create a mock RAG system
     rag_system = Mock()
@@ -226,19 +228,22 @@ def test_app():
     # Pydantic models for request/response
     class QueryRequest(BaseModel):
         """Request model for course queries"""
+
         query: str
-        session_id: Optional[str] = None
+        session_id: str | None = None
 
     class QueryResponse(BaseModel):
         """Response model for course queries"""
+
         answer: str
-        sources: List[Dict[str, Optional[str]]]
+        sources: list[dict[str, str | None]]
         session_id: str
 
     class CourseStats(BaseModel):
         """Response model for course statistics"""
+
         total_courses: int
-        course_titles: List[str]
+        course_titles: list[str]
 
     # API Endpoints
     @app.post("/api/query", response_model=QueryResponse)
@@ -253,11 +258,7 @@ def test_app():
             # Process query using RAG system
             answer, sources = rag_system.query(request.query, session_id)
 
-            return QueryResponse(
-                answer=answer,
-                sources=sources,
-                session_id=session_id
-            )
+            return QueryResponse(answer=answer, sources=sources, session_id=session_id)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
@@ -267,8 +268,7 @@ def test_app():
         try:
             analytics = rag_system.get_course_analytics()
             return CourseStats(
-                total_courses=analytics["total_courses"],
-                course_titles=analytics["course_titles"]
+                total_courses=analytics["total_courses"], course_titles=analytics["course_titles"]
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -295,13 +295,13 @@ def mock_search_response():
     """Mock search response with sample data."""
     return [
         {
-            'display_name': 'Introduction to Model Context Protocol - Lesson 1',
-            'link': 'https://example.com/course/mcp-intro/lesson1'
+            "display_name": "Introduction to Model Context Protocol - Lesson 1",
+            "link": "https://example.com/course/mcp-intro/lesson1",
         },
         {
-            'display_name': 'Introduction to Model Context Protocol - Lesson 2',
-            'link': 'https://example.com/course/mcp-intro/lesson2'
-        }
+            "display_name": "Introduction to Model Context Protocol - Lesson 2",
+            "link": "https://example.com/course/mcp-intro/lesson2",
+        },
     ]
 
 

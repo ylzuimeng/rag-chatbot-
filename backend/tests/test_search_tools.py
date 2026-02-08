@@ -3,9 +3,11 @@ Unit tests for CourseSearchTool and CourseOutlineTool.
 Tests tool logic: parameter passing, course resolution, error handling, source tracking.
 """
 
-import pytest
 from unittest.mock import Mock
-from search_tools import CourseSearchTool, CourseOutlineTool, ToolManager
+
+import pytest
+
+from search_tools import CourseOutlineTool, CourseSearchTool, ToolManager
 from vector_store import SearchResults
 
 

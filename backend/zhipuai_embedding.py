@@ -1,7 +1,5 @@
-import chromadb
-from chromadb.api.types import EmbeddingFunction, Documents, Embeddings
 import zhipuai
-from typing import List, Optional
+from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 
 
 class ZhipuAIEmbeddingFunction(EmbeddingFunction[Documents]):

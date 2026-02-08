@@ -1,7 +1,9 @@
+from dataclasses import dataclass
+from typing import Any
+
 import chromadb
 from chromadb.config import Settings
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
+
 from models import Course, CourseChunk
 from zhipuai_embedding import create_zhipuai_embedding_function
 
@@ -10,13 +12,13 @@ from zhipuai_embedding import create_zhipuai_embedding_function
 class SearchResults:
     """Container for search results with metadata"""
 
-    documents: List[str]
-    metadata: List[Dict[str, Any]]
-    distances: List[float]
-    error: Optional[str] = None
+    documents: list[str]
+    metadata: list[dict[str, Any]]
+    distances: list[float]
+    error: str | None = None
 
     @classmethod
-    def from_chroma(cls, chroma_results: Dict) -> "SearchResults":
+    def from_chroma(cls, chroma_results: dict) -> "SearchResults":
         """Create SearchResults from ChromaDB query results"""
         return cls(
             documents=chroma_results["documents"][0] if chroma_results["documents"] else [],
@@ -62,9 +64,9 @@ class VectorStore:
     def search(
         self,
         query: str,
-        course_name: Optional[str] = None,
-        lesson_number: Optional[int] = None,
-        limit: Optional[int] = None,
+        course_name: str | None = None,
+        lesson_number: int | None = None,
+        limit: int | None = None,
     ) -> SearchResults:
         """
         Main search interface that handles course resolution and content search.
@@ -100,7 +102,7 @@ class VectorStore:
         except Exception as e:
             return SearchResults.empty(f"Search error: {str(e)}")
 
-    def _resolve_course_name(self, course_name: str) -> Optional[str]:
+    def _resolve_course_name(self, course_name: str) -> str | None:
         """Use vector search to find best matching course by name"""
         try:
             results = self.course_catalog.query(query_texts=[course_name], n_results=1)
@@ -113,9 +115,7 @@ class VectorStore:
 
         return None
 
-    def _build_filter(
-        self, course_title: Optional[str], lesson_number: Optional[int]
-    ) -> Optional[Dict]:
+    def _build_filter(self, course_title: str | None, lesson_number: int | None) -> dict | None:
         """Build ChromaDB filter from search parameters"""
         if not course_title and lesson_number is None:
             return None
@@ -160,7 +160,7 @@ class VectorStore:
             ids=[course.title],
         )
 
-    def add_course_content(self, chunks: List[CourseChunk]):
+    def add_course_content(self, chunks: list[CourseChunk]):
         """Add course content chunks to the vector store"""
         if not chunks:
             return
@@ -190,7 +190,7 @@ class VectorStore:
         except Exception as e:
             print(f"Error clearing data: {e}")
 
-    def get_existing_course_titles(self) -> List[str]:
+    def get_existing_course_titles(self) -> list[str]:
         """Get all existing course titles from the vector store"""
         try:
             # Get all documents from the catalog
@@ -213,7 +213,7 @@ class VectorStore:
             print(f"Error getting course count: {e}")
             return 0
 
-    def get_all_courses_metadata(self) -> List[Dict[str, Any]]:
+    def get_all_courses_metadata(self) -> list[dict[str, Any]]:
         """Get metadata for all courses in the vector store"""
         import json
 
@@ -234,7 +234,7 @@ class VectorStore:
             print(f"Error getting courses metadata: {e}")
             return []
 
-    def get_course_link(self, course_title: str) -> Optional[str]:
+    def get_course_link(self, course_title: str) -> str | None:
         """Get course link for a given course title"""
         try:
             # Get course by ID (title is the ID)
@@ -247,7 +247,7 @@ class VectorStore:
             print(f"Error getting course link: {e}")
             return None
 
-    def get_lesson_link(self, course_title: str, lesson_number: int) -> Optional[str]:
+    def get_lesson_link(self, course_title: str, lesson_number: int) -> str | None:
         """Get lesson link for a given course title and lesson number"""
         import json
 

@@ -3,10 +3,9 @@ End-to-end tests for RAGSystem class.
 Tests complete request-response cycle, component integration, error handling.
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-import os
-import sys
 
 
 @pytest.mark.integration

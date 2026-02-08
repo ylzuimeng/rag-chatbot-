@@ -1,4 +1,3 @@
-from typing import Dict, List, Optional
 from dataclasses import dataclass
 
 
@@ -15,7 +14,7 @@ class SessionManager:
 
     def __init__(self, max_history: int = 5):
         self.max_history = max_history
-        self.sessions: Dict[str, List[Message]] = {}
+        self.sessions: dict[str, list[Message]] = {}
         self.session_counter = 0
 
     def create_session(self) -> str:
@@ -42,7 +41,7 @@ class SessionManager:
         self.add_message(session_id, "user", user_message)
         self.add_message(session_id, "assistant", assistant_message)
 
-    def get_conversation_history(self, session_id: Optional[str]) -> Optional[str]:
+    def get_conversation_history(self, session_id: str | None) -> str | None:
         """Get formatted conversation history for a session"""
         if not session_id or session_id not in self.sessions:
             return None

@@ -1,6 +1,7 @@
-import anthropic
-from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
+from typing import Any
+
+import anthropic
 
 
 @dataclass
@@ -10,23 +11,23 @@ class ConversationState:
     # Immutable context
     query: str
     system_prompt: str
-    base_params: Dict[str, Any]
-    tools: Optional[List[Dict]]
+    base_params: dict[str, Any]
+    tools: list[dict] | None
     tool_manager: Any
 
     # Accumulated conversation with Claude
-    messages: List[Dict[str, Any]] = field(default_factory=list)
+    messages: list[dict[str, Any]] = field(default_factory=list)
 
     # Execution tracking
     round_number: int = 0
     max_rounds: int = 2
 
     # Last action results
-    last_response: Optional[Any] = None
+    last_response: Any | None = None
 
     # Status tracking
     should_terminate: bool = False
-    termination_reason: Optional[str] = None
+    termination_reason: str | None = None
 
 
 class AIGenerator:
@@ -197,8 +198,8 @@ Provide only the direct answer to what was asked.
     def generate_response(
         self,
         query: str,
-        conversation_history: Optional[str] = None,
-        tools: Optional[List] = None,
+        conversation_history: str | None = None,
+        tools: list | None = None,
         tool_manager=None,
         max_rounds: int = 2,
     ) -> str:

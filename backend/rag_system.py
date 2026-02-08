@@ -1,11 +1,11 @@
-from typing import List, Tuple, Optional, Dict
 import os
-from document_processor import DocumentProcessor
-from vector_store import VectorStore
+
 from ai_generator import AIGenerator
+from document_processor import DocumentProcessor
+from models import Course
+from search_tools import CourseOutlineTool, CourseSearchTool, ToolManager
 from session_manager import SessionManager
-from search_tools import ToolManager, CourseSearchTool, CourseOutlineTool
-from models import Course, Lesson, CourseChunk
+from vector_store import VectorStore
 
 
 class RAGSystem:
@@ -32,7 +32,7 @@ class RAGSystem:
         self.tool_manager.register_tool(self.search_tool)
         self.tool_manager.register_tool(self.outline_tool)
 
-    def add_course_document(self, file_path: str) -> Tuple[Course, int]:
+    def add_course_document(self, file_path: str) -> tuple[Course, int]:
         """
         Add a single course document to the knowledge base.
 
@@ -57,7 +57,7 @@ class RAGSystem:
             print(f"Error processing course document {file_path}: {e}")
             return None, 0
 
-    def add_course_folder(self, folder_path: str, clear_existing: bool = False) -> Tuple[int, int]:
+    def add_course_folder(self, folder_path: str, clear_existing: bool = False) -> tuple[int, int]:
         """
         Add all course documents from a folder.
 
@@ -109,7 +109,7 @@ class RAGSystem:
 
         return total_courses, total_chunks
 
-    def query(self, query: str, session_id: Optional[str] = None) -> Tuple[str, List[str]]:
+    def query(self, query: str, session_id: str | None = None) -> tuple[str, list[str]]:
         """
         Process a user query using the RAG system with tool-based search.
 
@@ -149,7 +149,7 @@ class RAGSystem:
         # Return response with sources from tool searches
         return response, sources
 
-    def get_course_analytics(self) -> Dict:
+    def get_course_analytics(self) -> dict:
         """Get analytics about the course catalog"""
         return {
             "total_courses": self.vector_store.get_course_count(),
